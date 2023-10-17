@@ -45,81 +45,82 @@ def plotMoyParQualite():
     plt.title('Comparsion of means sorted by quality')
     moyennes_par_qualite_R = df1.groupby('quality').mean()
     moyennes_par_qualite_W = df2.groupby('quality').mean()
-    for i in range(1, len(colNames)-1):  # on sacrifie le dernier parce que flemme
-        if i != 5:
-            col1 = 'quality'
-            col2 = colNames[i-1]
-            if i < 6:
+    for i in range(0, len(colNames)-1):
+        col1 = 'quality'
+        col2 = colNames[i]
+        print(col2)
+        if i < 3:
+            sns.scatterplot(data=moyennes_par_qualite_R,
+                            x=col1, y=col2, color='red', ax=axes[0, i-1])
+            sns.scatterplot(data=moyennes_par_qualite_W,
+                            x=col1, y=col2, color='blue', ax=axes[0, i-1])
+        else:
+            if (i < 6) & (i != 3):
                 sns.scatterplot(data=moyennes_par_qualite_R,
-                                x=col1, y=col2, color='red', ax=axes[0, i-1])
+                                x=col1, y=col2, color='red', ax=axes[0, i - 2])
                 sns.scatterplot(data=moyennes_par_qualite_W,
-                                x=col1, y=col2, color='blue', ax=axes[0, i-1])
+                                x=col1, y=col2, color='blue', ax=axes[0, i - 2])
             else:
-                if i < 7:
-                    sns.scatterplot(data=moyennes_par_qualite_R,
-                                    x=col1, y=col2, color='red', ax=axes[0, i - 2])
-                    sns.scatterplot(data=moyennes_par_qualite_W,
-                                    x=col1, y=col2, color='blue', ax=axes[0, i - 2])
-                else:
+                if i > 3:
                     sns.scatterplot(data=moyennes_par_qualite_R,
                                     x=col1, y=col2, color='red', ax=axes[1, i-6])
                     sns.scatterplot(data=moyennes_par_qualite_W,
                                     x=col1, y=col2, color='blue', ax=axes[1, i-6])
-            plt.xlabel(col1)
-            plt.ylabel(col2)
-            title = col1 + ' to ' + col2
-            if i < 6:
-                axes[0, i - 1].set_title(title)
+        plt.xlabel(col1)
+        plt.ylabel(col2)
+        title = col1 + ' to ' + col2
+        if i < 3:
+            axes[0, i - 1].set_title(title)
+            print('on fait les titres <5')
+            print(col2)
+            print(i)
+        else:
+            if (i < 6) & (i != 3):
+                print('on fait les titres entre')
+                print(col2)
+                print(i)
+                axes[0, i - 2].set_title(title)
             else:
-                if i < 7:
-                    axes[0, i - 2].set_title(title)
-                else:
+                if i > 3:
+                    print('on fait les titres >5')
+                    print(col2)
+                    print(i)
                     axes[1, i - 6].set_title(title)
     plt.tight_layout()
     plt.show()
 
 
-def plotQualiteVSCol158():
+def plotQualiteVSColDecrois():
     scaler = MinMaxScaler()
     colonnes_a_mettre_a_l_echelle = [
-        'volatile acidity', 'chlorides', 'density']
+        col for col in df2.columns if col != "quality"]
     df1[colonnes_a_mettre_a_l_echelle] = scaler.fit_transform(
         df1[colonnes_a_mettre_a_l_echelle])
-    df2[colonnes_a_mettre_a_l_echelle] = scaler.fit_transform(
-        df2[colonnes_a_mettre_a_l_echelle])
-    print(df1.describe())
-    df1['Sum'] = df1['volatile acidity']+df1['chlorides']+df1['density']
-    df2['Sum'] = df2['volatile acidity']+df2['chlorides']+df2['density']
-    moyennes_par_qualite_R = df1.groupby('quality').mean()
-    moyennes_par_qualite_W = df2.groupby('quality').mean()
-    sns.scatterplot(data=moyennes_par_qualite_R,
-                    x='quality', y='Sum', color='red')
-    sns.scatterplot(data=moyennes_par_qualite_W,
-                    x='quality', y='Sum', color='blue')
+    df1['Sum'] = df1['volatile acidity'] + \
+        df1['chlorides']+df1['density'] + df1['pH']
+    sns.boxplot(x='quality', y='Sum', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
-    plt.ylabel('Sum of volatile acidity, chlorides and density')
+    plt.ylabel('Sum of volatile acidity, chlorides, density and pH')
     title = 'Comparison of quality to a sum of carefully chosen columns'
     plt.title(title)
     plt.show()
 
 
-def plotQualiteVSCol259():
+def plotQualiteVSColCrois():
     scaler = MinMaxScaler()
     colonnes_a_mettre_a_l_echelle = [
-        'citric acid', 'sulphates']
+        col for col in df2.columns if col != "quality"]
     df1[colonnes_a_mettre_a_l_echelle] = scaler.fit_transform(
         df1[colonnes_a_mettre_a_l_echelle])
-    df2[colonnes_a_mettre_a_l_echelle] = scaler.fit_transform(
-        df2[colonnes_a_mettre_a_l_echelle])
-    print(df1.describe())
-    df1['Sum'] = df1['citric acid']+df1['sulphates']
-    df2['Sum'] = df2['citric acid']+df2['sulphates']
-    moyennes_par_qualite_R = df1.groupby('quality').mean()
-    moyennes_par_qualite_W = df2.groupby('quality').mean()
-    sns.scatterplot(data=moyennes_par_qualite_R,
-                    x='quality', y='Sum', color='red')
-    sns.scatterplot(data=moyennes_par_qualite_W,
-                    x='quality', y='Sum', color='blue')
+    df1['Sum1'] = df1['citric acid']+df1['sulphates'] + df1['fixed acidity']
+    sns.boxplot(x='quality', y='Sum1', data=df1, color='red', width=0.4)
+    plt.xlabel('quality')
+    plt.ylabel('Sum of citric acid, fixed acidity and sulphates')
+    title = 'Comparison of quality to a sum of carefully chosen columns'
+    plt.title(title)
+    plt.show()
+    df1['Sum2'] = df1['citric acid']+df1['sulphates']
+    sns.boxplot(x='quality', y='Sum2', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
     plt.ylabel('Sum of citric acid and sulphates')
     title = 'Comparison of quality to a sum of carefully chosen columns'
@@ -142,3 +143,21 @@ def plotBoitesMoustQuali():
         plt.xlabel('Quality')
         plt.ylabel(colNames[i])
         plt.show()
+
+
+def plotQualiteVSColTot():
+    scaler = MinMaxScaler()
+    colonnes_a_mettre_a_l_echelle = [
+        col for col in df2.columns if col != "quality"]
+    df1[colonnes_a_mettre_a_l_echelle] = scaler.fit_transform(
+        df1[colonnes_a_mettre_a_l_echelle])
+    df1['Sum1'] = df1['citric acid']+df1['sulphates'] + df1['fixed acidity']
+    df1['Sum2'] = df1['volatile acidity'] + \
+        df1['chlorides']+df1['density'] + df1['pH']
+    df1['Tot'] = df1['Sum1'] - df1['Sum2']
+    sns.boxplot(x='quality', y='Tot', data=df1, color='red', width=0.4)
+    plt.xlabel('quality')
+    plt.ylabel('Sum')
+    title = 'Comparison of quality to citric acid + sulphates + fixed acidity \n- volatile acidity - chlorides - density - pH'
+    plt.title(title)
+    plt.show()
