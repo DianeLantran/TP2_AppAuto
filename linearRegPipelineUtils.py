@@ -4,9 +4,12 @@ Created on 17 Oct2023
 @author: diane
 """
 import pandas as pd
-from sklearn.linear_model import RidgeCV
+from sklearn.linear_model import RidgeCV, LinearRegression
 from sklearn import metrics
 import numpy as np
+
+
+import evaluationUtils as ev
 
 
 def pipeline(dataset, column):
@@ -26,7 +29,12 @@ def pipeline(dataset, column):
     print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred)) 
     print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
     print('Root Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred, squared=False))
-
+    print('R²:', metrics.r2_score(y_test, y_pred))
+    ev.plot_learning_curve(model, X_test, y_test)
+    ev.error_plot(y_test, y_pred, model)
+    ev.residual_plot(y_test, y_pred, "multipleLinReg")
+    print("Matrice de validation croisée")
+    ev.cross_validation_matrix(LinearRegression(), cols, column, 10)
     # Print the coefficients
     coefficients = pd.DataFrame({'Variable': cols.columns, 'Coefficient': model.coef_})
     print(coefficients)
@@ -43,6 +51,11 @@ def pipeline(dataset, column):
         print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
         print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
         print('Root Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred, squared=False))
+        print('R²:', metrics.r2_score(y_test, y_pred))
+        ev.plot_learning_curve(model_ridge, X_test, y_test)
+        ev.error_plot(y_test, y_pred, model_ridge)
+        ev.residual_plot(y_test, y_pred, "RidgeCV")
+        ev.cross_validation_matrix(model_ridge, cols, column, 10)
         # Print the coefficients
         coefficients = pd.DataFrame({'Variable': cols.columns, 'Coefficient': model.coef_})
         print(coefficients)
