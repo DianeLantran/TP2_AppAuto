@@ -12,10 +12,11 @@ from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 def colToOrdinal(df, colnames):
     # Prepare encoder object
     encoder = OrdinalEncoder(encoded_missing_value=-1)
-    
+
     # Fit and transform the selected column
     df[colnames] = encoder.fit_transform(df[colnames])
     return df
+
 
 def standardize(df):
     scaler = StandardScaler()

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import preprocessing as prep
 import seaborn as sns
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 # Import
@@ -155,4 +155,28 @@ def plotQualiteVSColTot():
     plt.ylabel('Sum')
     title = 'Comparison of quality to citric acid + sulphates + fixed acidity + alcohol \n- volatile acidity - chlorides - density - pH'
     plt.title(title)
+    plt.show()
+
+
+def analyzeReg(coefs, intercept):
+    scaler = StandardScaler()
+    df1[colNames] = scaler.fit_transform(df1[colNames])
+    df1['Y'] = intercept
+    for i in range(len(coefs['Variable'])):
+        df1['Y'] += coefs['Coefficient'][i]*df1[coefs['Variable'][i]]
+    sns.scatterplot(data=df1, x='quality', y='Y')
+    plt.xlabel('Qualité réelle')
+    plt.ylabel('Qualité prédite')
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(10, 6))
+
+    # Tracer un histogramme des différences entre les valeurs réelles et prédites
+    sns.histplot(df1['quality'] - df1['Y'], bins=20, kde=True)
+
+    plt.xlabel('Différence entre Qualité Réelle et Prédite')
+    plt.ylabel('Fréquence')
+    plt.title('Distribution des Erreurs de Prédiction')
+
     plt.show()
