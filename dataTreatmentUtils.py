@@ -1,8 +1,8 @@
 import pandas as pd
+import statsmodels.api as sm #pip install statmodels
 
 
 #Traitement des colonnes
-
 def getMissingDataPercentagePerColumn(dataset):
     # Calculer le nombre de données manquantes par colonne
     missing_data = dataset.isnull().sum()
@@ -27,8 +27,29 @@ def removeUselessColumns(dataset, max_percentage):
     return dataset
 
 
-#Traitement des lignes
+# evalue la realtion de linearité entre chaque colomne et la colonne "qualité"
+def checkLinear(dataset, column):
+    cols = dataset.drop(columns=[column])
+    for feature in cols:
+        # ajoute un terme lineaire constant pour creer un modele de regression lineaire
+        X = sm.add_constant(dataset[feature])
+        # ajuste le modele lineaire
+        model = sm.OLS(dataset[column], X)
+        results = model.fit()
+        r_squared = results.rsquared
 
+        thresh = 0.005 #seuil en dessous duquel la colonne n'est pas utilisée par le modèle
+        if r_squared < thresh:
+            dataset.drop(columns=[feature], inplace=True)
+            print(feature, " is deleted")
+    # Save the modified DataFrame back to a CSV file
+    dataset.to_csv('dataRW_regclean.csv', index=False) 
+    
+
+
+
+
+#Traitement des lignes
 def getMissingDataPercentageForOneRow(row):
     missing_data = row.isnull().sum()
     percentage = (missing_data / len(row)) * 100
