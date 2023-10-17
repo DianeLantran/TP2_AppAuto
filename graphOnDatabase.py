@@ -24,6 +24,6 @@ description.to_markdown('description.md')
 
 # dv.plotMoyParQualite()
 # dv.plotQualiteVSColDecrois()
-# dv.plotQualiteVSColCrois()
+dv.plotQualiteVSColCrois()
 dv.plotQualiteVSColTot()
 # dv.plotBoitesMoustQuali()
