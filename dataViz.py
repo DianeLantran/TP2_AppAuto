@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import preprocessing as prep
 import seaborn as sns
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 
 # Import
@@ -112,17 +112,11 @@ def plotQualiteVSColCrois():
         col for col in df2.columns if col != "quality"]
     df1[colonnes_a_mettre_a_l_echelle] = scaler.fit_transform(
         df1[colonnes_a_mettre_a_l_echelle])
-    df1['Sum1'] = df1['citric acid']+df1['sulphates'] + df1['fixed acidity']
+    df1['Sum1'] = df1['citric acid']+df1['sulphates'] + \
+        df1['fixed acidity'] + df1['alcohol']
     sns.boxplot(x='quality', y='Sum1', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
-    plt.ylabel('Sum of citric acid, fixed acidity and sulphates')
-    title = 'Comparison of quality to a sum of carefully chosen columns'
-    plt.title(title)
-    plt.show()
-    df1['Sum2'] = df1['citric acid']+df1['sulphates']
-    sns.boxplot(x='quality', y='Sum2', data=df1, color='red', width=0.4)
-    plt.xlabel('quality')
-    plt.ylabel('Sum of citric acid and sulphates')
+    plt.ylabel('Sum of citric acid, fixed acidity, alcohol and sulphates')
     title = 'Comparison of quality to a sum of carefully chosen columns'
     plt.title(title)
     plt.show()
@@ -151,13 +145,38 @@ def plotQualiteVSColTot():
         col for col in df2.columns if col != "quality"]
     df1[colonnes_a_mettre_a_l_echelle] = scaler.fit_transform(
         df1[colonnes_a_mettre_a_l_echelle])
-    df1['Sum1'] = df1['citric acid']+df1['sulphates'] + df1['fixed acidity']
+    df1['Sum1'] = df1['citric acid']+df1['sulphates'] + \
+        df1['fixed acidity'] + df1['alcohol']
     df1['Sum2'] = df1['volatile acidity'] + \
         df1['chlorides']+df1['density'] + df1['pH']
     df1['Tot'] = df1['Sum1'] - df1['Sum2']
     sns.boxplot(x='quality', y='Tot', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
     plt.ylabel('Sum')
-    title = 'Comparison of quality to citric acid + sulphates + fixed acidity \n- volatile acidity - chlorides - density - pH'
+    title = 'Comparison of quality to citric acid + sulphates + fixed acidity + alcohol \n- volatile acidity - chlorides - density - pH'
     plt.title(title)
+    plt.show()
+
+
+def analyzeReg(coefs, intercept):
+    scaler = StandardScaler()
+    df1[colNames] = scaler.fit_transform(df1[colNames])
+    df1['Y'] = intercept
+    for i in range(len(coefs['Variable'])):
+        df1['Y'] += coefs['Coefficient'][i]*df1[coefs['Variable'][i]]
+    sns.scatterplot(data=df1, x='quality', y='Y')
+    plt.xlabel('Qualité réelle')
+    plt.ylabel('Qualité prédite')
+    plt.legend()
+    plt.show()
+
+    plt.figure(figsize=(10, 6))
+
+    # Tracer un histogramme des différences entre les valeurs réelles et prédites
+    sns.histplot(df1['quality'] - df1['Y'], bins=20, kde=True)
+
+    plt.xlabel('Différence entre Qualité Réelle et Prédite')
+    plt.ylabel('Fréquence')
+    plt.title('Distribution des Erreurs de Prédiction')
+
     plt.show()
