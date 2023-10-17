@@ -17,7 +17,7 @@ DATASET_R = pd.read_csv(FILE_PATH_R, sep=';')
 ## D'après les graphes réalisés on observes que la qualité du vin ne semble pas dépendre linéairement des colonnes acidité volatile, sucre résiduel et qualité des sulfates
 ## Nettoyage des données (<70% de données sur lignes et colones)
 df_r = dataTreatmentUtils.removeUselessColumns(DATASET_R, 30)
-dataTreatmentUtils.checkLinear(df_r, 'quality')
+dataTreatmentUtils.checkLinear(df_r, 'quality') #verifie si les colonnes sont adaptées à la regression lineaire
 
 #nouvelle base clean
 FILE_PATH_R = "dataRW_regclean.csv"
