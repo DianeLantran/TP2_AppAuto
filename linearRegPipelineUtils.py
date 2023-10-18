@@ -4,13 +4,13 @@ Created on 17 Oct2023
 @author: diane
 """
 import pandas as pd
-from sklearn.linear_model import RidgeCV, LinearRegression, Lasso
+from sklearn.linear_model import RidgeCV, LinearRegression, Lasso, ElasticNet
 from sklearn import metrics
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 import dataViz as dv
-
+import matplotlib.pyplot as plt
 
 import evaluationUtils as ev
 
@@ -28,9 +28,15 @@ def getMetrics(y_test, y_pred):
     print('R²:', metrics.r2_score(y_test, y_pred))
     
 def plotEvaluationGraphs(model, X_test, y_test, y_pred, regType):
-    ev.plot_learning_curve(model, X_test, y_test)
-    ev.error_plot(y_test, y_pred, model)
-    ev.residual_plot(y_test, y_pred, regType)
+    fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(15, 5))
+    axes[0] = ev.plot_learning_curve(axes[0], model, X_test, y_test)
+    axes[1] = ev.error_plot(axes[1], y_test, y_pred, model)
+    axes[2] = ev.residual_plot(axes[2], y_test, y_pred)
+    
+    fig.suptitle('Plots for the model ' + regType, fontsize=16)
+    plt.tight_layout()
+    plt.show()
+
     
 def getEvaluationInfo(model, features, target, foldNumber = 10):
     print("Matrice de validation croisée")
@@ -46,23 +52,20 @@ def getEvaluationInfo(model, features, target, foldNumber = 10):
     return coefficients
 
 def executePipelines(X, y):
-    pipelineData = [
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', multipleLinReg()),
-        ('Lasso', Lasso(alpha=1.0)),
-        ('Ridge', RidgeCV(alphas=[0.1, 1.0, 10.0]))
-    ]
-    feature_names = X.columns
-    selected_features = feature_names.append(pd.Index(["all"] * 3))
-    combined_data = [(pipelineData[i][0], pipelineData[i][1], selected_features[i]) for i in range(len(pipelineData))]
-    for model_name, model, col in combined_data:
+    # Prepare the pipeline elements
+    pipelineData = []
+    for name in X.columns:
+        pipelineData.append(('Simple Linear Regression for ' + name 
+                             + " feature", LinearRegression(), name))
+    pipelineData.append(('Multiple Linear Regression', 
+                         multipleLinReg(), "all"))
+    pipelineData.append(('Lasso Regression', Lasso(alpha=1.0), "all"))
+    pipelineData.append(('Ridge Regression', 
+                         RidgeCV(alphas=[0.1, 1.0, 10.0]), "all"))
+    pipelineData.append(('Elastic Net Regression', ElasticNet(), "all"))
+    
+    # Create a pipeline for each regression we want to do, then execute it
+    for model_name, model, col in pipelineData:
         match col:
             case "all":
                 if (model_name == 'Linear Regression'):
@@ -82,9 +85,9 @@ def executePipelines(X, y):
                 pipeline = Pipeline([
                     ('regressor', model)  # Linear regression model
                 ])
-                executeSinglePipeline(model_name + " for " + col, pipeline, selected_X, y)
-                
-                
+                executeSinglePipeline(model_name, pipeline, 
+                                      selected_X, y)
+
 def executeSinglePipeline(model_name, pipeline, X, y):
     # Split data into training et testing set
     X_train, X_test, y_train, y_test = splitTrainTest(X, y, test_size=0.2, 

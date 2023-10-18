@@ -27,7 +27,7 @@ def r2(y_true, y_pred):
 
 
 #x et y sont les caractéristiques et la variable cible
-def plot_learning_curve(model, X, y):
+def plot_learning_curve(axis, model, X, y):
     train_errors = []
     validation_errors = []
     
@@ -46,39 +46,39 @@ def plot_learning_curve(model, X, y):
         validation_error = metrics.mean_squared_error(y_val, y_val_pred)
         validation_errors.append(validation_error)
     
-    plt.plot(range(1, len(X_train) + 1), train_errors, label="Erreur d'entraînement")
-    plt.plot(range(1, len(X_train) + 1), validation_errors, label="Erreur de validation")
-    plt.xlabel("Taille de l'ensemble d'entraînement")
-    plt.ylabel("Erreur quadratique moyenne (MSE)")
-    plt.legend()
-    plt.title("Courbe d'apprentissage")
-    plt.grid(True)
-    plt.show()
+    axis.plot(range(1, len(X_train) + 1), train_errors, label="Training error")
+    axis.plot(range(1, len(X_train) + 1), validation_errors, 
+              linestyle='dashed', label="Validation error")
+    axis.set_xlabel("Training set size")
+    axis.set_ylabel("Mean squared error (MSE)")
+    axis.legend()
+    axis.set_title("Learning curve")
+    axis.grid(True)
+    return axis
+    
+
+def error_plot(axis, y_true, y_pred, model):
+    axis.scatter(y_true, y_pred, c='b', label='Predicted values')
+
+    # Plot y = x    
+    axis.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], '-', label='y = x')
+    
+    axis.set_xlabel("Expected values")
+    axis.set_ylabel("Predicted values")
+    axis.set_title("Expected vs Predicted values comparison")
+    axis.legend()
+    axis.grid(True)
+    return axis
     
     
-def error_plot(y_true, y_pred, model):
-    plt.figure(figsize=(8, 8))
-    plt.scatter(y_true, y_pred, c='b', label='Valeurs Prédites')
-    
-    #y = x
-    plt.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], '-', label='y = x')
-    
-    plt.xlabel("Valeurs Réelles")
-    plt.ylabel("Valeurs Prédites")
-    plt.title("Comparaison des Valeurs Réelles et Prédites")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-    
-    
-def residual_plot(y_true, y_predicted, model_name): 
-    plt.plot(y_predicted, y_true -y_predicted, "*") 
-    plt.plot(y_predicted, np.zeros_like(y_predicted), "-") 
-    plt.legend(["Data", "Perfection"]) 
-    plt.title("Residual Plot of " + model_name) 
-    plt.xlabel("Predicted Value") 
-    plt.ylabel("Residual") 
-    plt.show()
+def residual_plot(axis, y_true, y_predicted): 
+    axis.plot(y_predicted, y_true -y_predicted, "*") 
+    axis.plot(y_predicted, np.zeros_like(y_predicted), "-") 
+    axis.legend(["Data", "Perfection"]) 
+    axis.set_title("Residual Plot") 
+    axis.set_xlabel("Predicted Value") 
+    axis.set_ylabel("Residual") 
+    return axis
     
 
 

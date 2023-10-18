@@ -1,16 +1,7 @@
-import csv
-import readingFileUtils
 import dataTreatmentUtils
-import downsizeUtils
 import linearRegPipelineUtils
-import dataViz as dv
 import pandas as pd
-from tabulate import tabulate
 import preprocessing as prep
-
-from sklearn.feature_selection import SelectKBest
-# Vous pouvez utiliser une autre fonction de score
-from sklearn.feature_selection import f_classif
 
 # Import
 FILE_PATH_R = "data\winequality-red.csv"
@@ -27,16 +18,14 @@ FILE_PATH_R = "dataRW_regclean.csv"
 DATASET_R = pd.read_csv(FILE_PATH_R, sep=';')
 
 # Preprocessing
-# on a que des colonnes avec des nombres donc pas besoin
+# on a que des colonnes avec des nombres et sans données manquantes
+# donc pas besoin
 
 # Prepare data
 X = df_r.drop(columns=['quality'])
-y = df_r['quality']
 X = prep.standardize(X)
+y = df_r['quality']
 
-# PCA
-threshold = 0.1  # les valeurs propres < 10% ne sont pas prises en compte
-data_PCA_r = downsizeUtils.PCA(df_r, threshold)
 
 # Linear Regression Pipeline
 linearRegPipelineUtils.executePipelines(X, y)
