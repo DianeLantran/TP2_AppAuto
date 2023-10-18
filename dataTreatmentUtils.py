@@ -28,7 +28,7 @@ def removeUselessColumns(dataset, max_percentage):
 
 
 # evalue la realtion de linearité entre chaque colomne et la colonne "qualité"
-def checkLinear(dataset, column):
+def checkLinearold(dataset, column):
     cols = dataset.drop(columns=[column])
     for feature in cols:
         # ajoute un terme lineaire constant pour creer un modele de regression lineaire
@@ -45,9 +45,19 @@ def checkLinear(dataset, column):
     # Save the modified DataFrame back to a CSV file
     dataset.to_csv('dataRW_regclean.csv', index=False) 
     
+    
+# evalue la realtion de linearité entre chaque colomne et la colonne "qualité"
+def removeNotColinearCol(features_df, y, thresh = 0.005):
+    for feature in features_df:
+        # ajoute un terme lineaire constant pour creer un modele de regression lineaire
+        X = sm.add_constant(features_df[feature])
+        # ajuste le modele lineaire
+        model = sm.OLS(y, X)
+        results = model.fit()
+        r_squared = results.rsquared
 
-
-
+        if r_squared < thresh:
+            features_df.drop(columns=[feature], inplace=True)
 
 #Traitement des lignes
 def getMissingDataPercentageForOneRow(row):

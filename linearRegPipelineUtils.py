@@ -11,7 +11,7 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 import dataViz as dv
 import matplotlib.pyplot as plt
-
+import dataTreatmentUtils
 import evaluationUtils as ev
 
 def displayResults(model, X_test, y_test, y_pred, regType, features, target, foldNumber = 10):
@@ -51,6 +51,40 @@ def getEvaluationInfo(model, features, target, foldNumber = 10):
     print('Intercept:', model.intercept_)
     return coefficients
 
+def checkColumnsLinearity(X, y):
+    pca = PCA(n_components = 0.7, svd_solver = 'full')
+    df_pca = pca.fit_transform(X)
+    df_pca = pd.DataFrame(df_pca, columns=['PC1', 'PC2', 'PC3', 'PC4'])
+    fig, axes = plt.subplots(nrows=1, ncols=4, figsize=(20, 5))
+    print(axes.shape)
+    for i, feature in enumerate(df_pca.columns):
+        # Extract the current feature and reshape for sklearn
+        current_feature = df_pca[feature].values.reshape(-1, 1)
+        
+        # Create and fit a linear regression model
+        model = multipleLinReg()
+        model.fit(current_feature, y)
+        
+        # Predict using the model
+        y_pred = model.predict(current_feature)
+        
+        # Calculate R-squared
+        r_squared = metrics.r2_score(y, y_pred)
+        
+        # Print R-squared for the current feature
+        print(f'R-squared for {feature}: {r_squared}')
+        
+        # Optionally, you can plot the regression line and data points
+        axes[i].scatter(current_feature, y, color='blue', label='Data')
+        axes[i].plot(current_feature, y_pred, color='red', label='Regression Line')
+        axes[i].set_xlabel(feature)
+        axes[i].set_ylabel('Quality')
+        axes[i].set_title(f'Regression for {feature}')
+        axes[i].legend()
+    
+    fig.suptitle('Colinearity between PCA columns and quality', fontsize=16)
+    plt.show()
+
 def executePipelines(X, y):
     # Prepare the pipeline elements
     pipelineData = []
@@ -68,11 +102,15 @@ def executePipelines(X, y):
     for model_name, model, col in pipelineData:
         match col:
             case "all":
-                if (model_name == 'Linear Regression'):
+                if (model_name == 'Multiple Linear Regression'):
                     pipeline = Pipeline([
                         ('pca', PCA(n_components = 0.7, svd_solver = 'full')),
                         ('regressor', model)  # Linear regression model
                     ])
+                    checkColumnsLinearity(X, y)
+                    # To do if time : remove the columns that aren't colinear with target after PCA
+                    #dataTreatmentUtils.removeNotColinearCol(X, y)
+                    
                 else:
                     pipeline = Pipeline([
                         ('regressor', model)  # Linear regression model
@@ -85,13 +123,15 @@ def executePipelines(X, y):
                 pipeline = Pipeline([
                     ('regressor', model)  # Linear regression model
                 ])
-                executeSinglePipeline(model_name, pipeline, 
-                                      selected_X, y)
+                executeSinglePipeline(model_name, pipeline, selected_X, y)
 
 def executeSinglePipeline(model_name, pipeline, X, y):
     # Split data into training et testing set
     X_train, X_test, y_train, y_test = splitTrainTest(X, y, test_size=0.2, 
                                                       random_state=42)
+    
+    # Retrieve model
+    model = pipeline['regressor']
     
     # Fit the model to the training data
     pipeline.fit(X_train, y_train)
@@ -99,8 +139,6 @@ def executeSinglePipeline(model_name, pipeline, X, y):
     # Make predictions on the testing set
     y_pred = pipeline.predict(X_test)
     
-    # Retrieve model
-    model = pipeline['regressor']
     
     # Get metrics, graphs and other info for the results
     coefficients = displayResults(model, X_test, y_test, y_pred, 
