@@ -11,61 +11,67 @@ import numpy as np
 
 import evaluationUtils as ev
 
+def displayResults(model, X_test, y_test, y_pred, regType, features, target, foldNumber = 10):
+    getMetrics(y_test, y_pred)
+    plotEvaluationGraphs(model, X_test, y_test, y_pred, regType)
+    coefficients = getEvaluationInfo(model, features, target, foldNumber)
+    return coefficients
+
+def getMetrics(y_test, y_pred):
+    print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
+    print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
+    print('Root Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred, squared=False))
+    print('R²:', metrics.r2_score(y_test, y_pred))
+    
+def plotEvaluationGraphs(model, X_test, y_test, y_pred, regType):
+    ev.plot_learning_curve(model, X_test, y_test)
+    ev.error_plot(y_test, y_pred, model)
+    ev.residual_plot(y_test, y_pred, regType)
+    
+def getEvaluationInfo(model, features, target, foldNumber = 10):
+    print("Matrice de validation croisée")
+    ev.cross_validation_matrix(model, features, target, foldNumber)
+    
+    # Print the coefficients
+    coefficients = pd.DataFrame(
+        {'Variable': features.columns, 'Coefficient': model.coef_})
+    print(coefficients)
+
+    # Print the intercept
+    print('Intercept:', model.intercept_)
+    return coefficients
 
 def pipeline(dataset, column):
-    cols = dataset.drop(columns=[column])
-    column = dataset[column]
-    # sépare les datas en training et testing set
-    X_train, X_test, y_train, y_test = splitTrainTest(
-        cols, column, test_size=0.2, random_state=42)
+    # Separate features from target column
+    features = dataset.drop(columns=[column])
+    target = dataset[column]
+    
+    # Split data into training et testing set
+    X_train, X_test, y_train, y_test = splitTrainTest(features, target, 
+                                                      test_size=0.2, 
+                                                      random_state=42)
 
-    # cree un modele de regression multiple
+    # Create multiple regression model
     model = multipleLinReg()
+    
     # Fit the model to the training data
     model.fit(X_train, y_train)
 
     # Make predictions on the testing set
     y_pred = model.predict(X_test)
-
-    print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
-    print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
-    print('Root Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred, squared=False))
-    print('R²:', metrics.r2_score(y_test, y_pred))
-    ev.plot_learning_curve(model, X_test, y_test)
-    ev.error_plot(y_test, y_pred, model)
-    ev.residual_plot(y_test, y_pred, "multipleLinReg")
-    print("Matrice de validation croisée")
-    ev.cross_validation_matrix(LinearRegression(), cols, column, 10)
     
-    # Print the coefficients
-    coefficients = pd.DataFrame(
-        {'Variable': cols.columns, 'Coefficient': model.coef_})
-    print(coefficients)
-
-    # Print the intercept
-    print('Intercept:', model.intercept_)
+    # Get metrics, graphs and other info for the results
+    coefficients = displayResults(model, X_test, y_test, y_pred, 
+                                  "multipleLinReg", features, target)
 
     # la variance est vraiment elevée : utilisation du modele regression ridge avec scikit learn
     if metrics.mean_absolute_error(y_test, y_pred) > 0.5:
         model_ridge = RidgeCV(alphas=[0.1, 1.0, 10.0])
         model_ridge.fit(X_train, y_train)
         best_alpha = model_ridge.alpha_
-
-        print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
-        print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
-        print('Root Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred, squared=False))
-        print('R²:', metrics.r2_score(y_test, y_pred))
-        ev.plot_learning_curve(model_ridge, X_test, y_test)
-        ev.error_plot(y_test, y_pred, model_ridge)
-        ev.residual_plot(y_test, y_pred, "RidgeCV")
-        ev.cross_validation_matrix(model_ridge, cols, column, 10)
         
-        # Print the coefficients
-        coefficients = pd.DataFrame(
-            {'Variable': cols.columns, 'Coefficient': model.coef_})
-        print(coefficients)
-        # Print the intercept
-        print('Intercept:', model.intercept_)
+        coefficients = displayResults(model_ridge, X_test, y_test, y_pred, 
+                                      "RidgeCV", features, target)
         return (coefficients, model.intercept_)
 
 
