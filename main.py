@@ -29,13 +29,14 @@ DATASET_R = pd.read_csv(FILE_PATH_R, sep=';')
 # Preprocessing
 # on a que des colonnes avec des nombres donc pas besoin
 
-# Standardization
-df_r = prep.standardize(df_r)
+# Prepare data
+X = df_r.drop(columns=['quality'])
+y = df_r['quality']
+X = prep.standardize(X)
 
 # PCA
 threshold = 0.1  # les valeurs propres < 10% ne sont pas prises en compte
 data_PCA_r = downsizeUtils.PCA(df_r, threshold)
 
 # Linear Regression Pipeline
-coefs, intercept = linearRegPipelineUtils.pipeline(df_r, 'quality')
-dv.analyzeReg(coefs, intercept)
+linearRegPipelineUtils.executePipelines(X, y)

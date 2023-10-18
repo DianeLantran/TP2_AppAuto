@@ -158,13 +158,12 @@ def plotQualiteVSColTot():
     plt.show()
 
 
-def analyzeReg(coefs, intercept):
-    scaler = StandardScaler()
-    df1[colNames] = scaler.fit_transform(df1[colNames])
-    df1['Y'] = intercept
+def analyzeReg(X, y, coefs, intercept):
+    df = pd.concat([X, y], axis=1)
+    df['Y'] = intercept
     for i in range(len(coefs['Variable'])):
-        df1['Y'] += coefs['Coefficient'][i]*df1[coefs['Variable'][i]]
-    sns.scatterplot(data=df1, x='quality', y='Y')
+        df['Y'] = df['Y'] + coefs['Coefficient'][i]*df[coefs['Variable'][i]]
+    sns.scatterplot(data=df, x='quality', y='Y')
     plt.xlabel('Qualité réelle')
     plt.ylabel('Qualité prédite')
     plt.legend()
@@ -173,7 +172,7 @@ def analyzeReg(coefs, intercept):
     plt.figure(figsize=(10, 6))
 
     # Tracer un histogramme des différences entre les valeurs réelles et prédites
-    sns.histplot(df1['quality'] - df1['Y'], bins=20, kde=True)
+    sns.histplot(df['quality'] - df['Y'], bins=20, kde=True)
 
     plt.xlabel('Différence entre Qualité Réelle et Prédite')
     plt.ylabel('Fréquence')

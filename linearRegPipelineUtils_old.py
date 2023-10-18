@@ -4,18 +4,14 @@ Created on 17 Oct2023
 @author: diane
 """
 import pandas as pd
-from sklearn.linear_model import RidgeCV, LinearRegression, Lasso
+from sklearn.linear_model import RidgeCV, LinearRegression
 from sklearn import metrics
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.pipeline import Pipeline
-import dataViz as dv
 
 
 import evaluationUtils as ev
 
 def displayResults(model, X_test, y_test, y_pred, regType, features, target, foldNumber = 10):
-    print("\n\nDisplaying results for ", regType)
     getMetrics(y_test, y_pred)
     plotEvaluationGraphs(model, X_test, y_test, y_pred, regType)
     coefficients = getEvaluationInfo(model, features, target, foldNumber)
@@ -34,7 +30,7 @@ def plotEvaluationGraphs(model, X_test, y_test, y_pred, regType):
     
 def getEvaluationInfo(model, features, target, foldNumber = 10):
     print("Matrice de validation croisée")
-    ev.cross_validation_matrix(model, features.values, target.values, foldNumber)
+    ev.cross_validation_matrix(model, features, target, foldNumber)
     
     # Print the coefficients
     coefficients = pd.DataFrame(
@@ -45,65 +41,38 @@ def getEvaluationInfo(model, features, target, foldNumber = 10):
     print('Intercept:', model.intercept_)
     return coefficients
 
-def executePipelines(X, y):
-    pipelineData = [
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', LinearRegression()),
-        ('Linear Regression', multipleLinReg()),
-        ('Lasso', Lasso(alpha=1.0)),
-        ('Ridge', RidgeCV(alphas=[0.1, 1.0, 10.0]))
-    ]
-    feature_names = X.columns
-    selected_features = feature_names.append(pd.Index(["all"] * 3))
-    combined_data = [(pipelineData[i][0], pipelineData[i][1], selected_features[i]) for i in range(len(pipelineData))]
-    for model_name, model, col in combined_data:
-        match col:
-            case "all":
-                if (model_name == 'Linear Regression'):
-                    pipeline = Pipeline([
-                        ('pca', PCA(n_components = 0.7, svd_solver = 'full')),
-                        ('regressor', model)  # Linear regression model
-                    ])
-                else:
-                    pipeline = Pipeline([
-                        ('regressor', model)  # Linear regression model
-                    ])
-                    
-                executeSinglePipeline(model_name, pipeline, X, y)
-        
-            case _:
-                selected_X = X[[col]]
-                pipeline = Pipeline([
-                    ('regressor', model)  # Linear regression model
-                ])
-                executeSinglePipeline(model_name + " for " + col, pipeline, selected_X, y)
-                
-                
-def executeSinglePipeline(model_name, pipeline, X, y):
+def pipeline(dataset, column):
+    # Separate features from target column
+    features = dataset.drop(columns=[column])
+    target = dataset[column]
+    
     # Split data into training et testing set
-    X_train, X_test, y_train, y_test = splitTrainTest(X, y, test_size=0.2, 
+    X_train, X_test, y_train, y_test = splitTrainTest(features, target, 
+                                                      test_size=0.2, 
                                                       random_state=42)
+
+    # Create multiple regression model
+    model = multipleLinReg()
     
     # Fit the model to the training data
-    pipeline.fit(X_train, y_train)
+    model.fit(X_train, y_train)
 
     # Make predictions on the testing set
-    y_pred = pipeline.predict(X_test)
-    
-    # Retrieve model
-    model = pipeline['regressor']
+    y_pred = model.predict(X_test)
     
     # Get metrics, graphs and other info for the results
     coefficients = displayResults(model, X_test, y_test, y_pred, 
-                                  model_name, X, y)
-    
-    dv.analyzeReg(X, y, coefficients, model.intercept_)
+                                  "multipleLinReg", features, target)
+
+    # la variance est vraiment elevée : utilisation du modele regression ridge avec scikit learn
+    if metrics.mean_absolute_error(y_test, y_pred) > 0.5:
+        model_ridge = RidgeCV(alphas=[0.1, 1.0, 10.0])
+        model_ridge.fit(X_train, y_train)
+        best_alpha = model_ridge.alpha_ # TODO: Jsp pq c'est la
+        
+        coefficients = displayResults(model_ridge, X_test, y_test, y_pred, 
+                                      "RidgeCV", features, target)
+        return (coefficients, model.intercept_)
 
 
 def splitTrainTest(data, column, test_size=0.2, random_state=None):
