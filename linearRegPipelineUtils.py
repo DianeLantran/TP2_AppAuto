@@ -65,7 +65,7 @@ def checkColumnsLinearity(X, y):
         current_feature = df_pca[feature].values.reshape(-1, 1)
         
         # Create and fit a linear regression model
-        model = multipleLinReg()
+        model = LinearRegression()
         model.fit(current_feature, y)
         
         # Predict using the model
@@ -96,10 +96,8 @@ def executePipelines(X, y):
                              + " caractéristique :", LinearRegression(), name))
     pipelineData.append(('Regression linéaire multiple', 
                          LinearRegression(), "all"))
-    pipelineData.append(('Regression lasso', Lasso(alpha=1.0), "all"))
     pipelineData.append(('Regression Ridge', 
                          RidgeCV(alphas=[0.1, 1.0, 10.0]), "all"))
-    pipelineData.append(('Regression Elastic Net', ElasticNet(), "all"))
     
     # crée une pipeline pour chaque regression qu'on souhaite appliquer puis l execute
     for model_name, model, col in pipelineData:
@@ -149,7 +147,6 @@ def executeSinglePipeline(model_name, pipeline, X, y):
     
     dv.analyzeReg(X, y, coefficients, model.intercept_)
 
-
 def splitTrainTest(data, column, test_size=0.2, random_state=None):
     # test_size = Proportion du dataset a inclure dans le test split
     # random_state: Seed pour le nombre random pour assurer la reproductibilité. Peut prendre n'importe quelle valeur entiere
@@ -176,7 +173,6 @@ def splitTrainTest(data, column, test_size=0.2, random_state=None):
     y_train, y_test = column[train_indices], column[test_indices]
 
     return X_train, X_test, y_train, y_test
-
 
 class multipleLinReg:
     def __init__(self):
