@@ -100,8 +100,9 @@ def plotQualiteVSColDecrois():
         df1['chlorides']+df1['density'] + df1['pH']
     sns.boxplot(x='quality', y='Sum', data=df1, color='red', width=0.4)
     plt.xlabel('Qualité')
-    plt.ylabel('Somme de l acidité volatile, les chlorides, la densité et le pH')
-    title = 'Comparaison entre qualité et la somme des colonnes d intérêt'
+    plt.ylabel(
+        "Somme de l'acidité volatile, des chlorides, de la densité et du pH")
+    title = "Comparaison entre qualité et la somme des colonnes d'intérêt"
     plt.title(title)
     plt.show()
 
@@ -116,8 +117,9 @@ def plotQualiteVSColCrois():
         df1['fixed acidity'] + df1['alcohol']
     sns.boxplot(x='quality', y='Sum1', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
-    plt.ylabel('Somme de l acide citrique, l acidite fixe, le taux d alcool et les sulphates')
-    title = 'Comparaison de la qualité à la somme des colonnes d intérêt'
+    plt.ylabel(
+        "Somme de l'acide citrique, l'acidite fixe, le taux d'alcool et les sulphates")
+    title = "Comparaison de la qualité à la somme des colonnes d'intérêt"
     plt.title(title)
     plt.show()
 
@@ -148,12 +150,14 @@ def plotQualiteVSColTot():
     df1['Sum1'] = df1['citric acid']+df1['sulphates'] + \
         df1['fixed acidity'] + df1['alcohol']
     df1['Sum2'] = df1['volatile acidity'] + \
-        df1['chlorides']+df1['density'] + df1['pH']
+        df1['chlorides']+df1['density'] + df1['total sulfur dioxide']
     df1['Tot'] = df1['Sum1'] - df1['Sum2']
+    plt.figure(figsize=(10, 6))
+
     sns.boxplot(x='quality', y='Tot', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
     plt.ylabel('Sum')
-    title = 'Comparaison de la qualité d acide citrique, des sulphates, de l acidité fixe, du taux d alcool \n- de l acidité volatile, des chlorides, de la densité et du pH'
+    title = "Comparaison de la qualité par rapport à la somme de \nl'acide citrique, des sulphates, de l'acidité fixe, du taux d alcool \nen soustrayant l'acidité volatile, les chlorides, la densité et le total de dioxyde de soufre"
     plt.title(title)
     plt.show()
 
