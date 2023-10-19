@@ -128,7 +128,7 @@ def executePipelines(X, y):
 
 def executeSinglePipeline(model_name, pipeline, X, y):
     # sépare le dataset en training et testing set
-    X_train, X_test, y_train, y_test = splitTrainTest(X, y, test_size=0.2, 
+    X_train, X_test, y_train, y_test = ev.splitTrainTest(X, y, test_size=0.2, 
                                                       random_state=42)
     
     # retrouve model
@@ -146,33 +146,6 @@ def executeSinglePipeline(model_name, pipeline, X, y):
                                   model_name, X, y)
     
     dv.analyzeReg(X, y, coefficients, model.intercept_)
-
-def splitTrainTest(data, column, test_size=0.2, random_state=None):
-    # test_size = Proportion du dataset a inclure dans le test split
-    # random_state: Seed pour le nombre random pour assurer la reproductibilité. Peut prendre n'importe quelle valeur entiere
-    if isinstance(data, pd.DataFrame):
-        data = data.values
-    if isinstance(column, pd.Series):
-        column = column.values
-
-    if random_state is not None:
-        np.random.seed(random_state)
-
-    # mélange les indices
-    indices = np.arange(len(data))
-    np.random.shuffle(indices)
-
-    # calcule le nombre d'echantillons pour la base de test
-    test_samples = int(len(data) * test_size)
-
-    # sépare les données
-    test_indices = indices[:test_samples]
-    train_indices = indices[test_samples:]
-
-    X_train, X_test = data[train_indices], data[test_indices]
-    y_train, y_test = column[train_indices], column[test_indices]
-
-    return X_train, X_test, y_train, y_test
 
 class multipleLinReg:
     def __init__(self):
