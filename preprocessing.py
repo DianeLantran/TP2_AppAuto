@@ -9,10 +9,10 @@ from sklearn.preprocessing import OrdinalEncoder, StandardScaler
 
 
 def colToOrdinal(df, colnames):
-    # Prepare encoder object
+    # Prepare l'encoder object
     encoder = OrdinalEncoder(encoded_missing_value=-1)
 
-    # Fit and transform the selected column
+    # Fit et transforme la colonne selectionnée
     df[colnames] = encoder.fit_transform(df[colnames])
     return df
 

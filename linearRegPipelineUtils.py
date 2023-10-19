@@ -1,5 +1,5 @@
 """
-Created on 17 Oct2023
+Created on 17 Oct 2023
 
 @author: diane
 """
@@ -11,29 +11,31 @@ from sklearn.decomposition import PCA
 from sklearn.pipeline import Pipeline
 import dataViz as dv
 import matplotlib.pyplot as plt
-import dataTreatmentUtils
 import evaluationUtils as ev
 
 def displayResults(model, X_test, y_test, y_pred, regType, features, target, foldNumber = 10):
-    print("\n\nDisplaying results for ", regType)
+    # affiche les réultats : type de regression, métriques,  graphes et coefficients de régression
+    print("\n\nRésultat du type de regression : ", regType)
     getMetrics(y_test, y_pred)
     plotEvaluationGraphs(model, X_test, y_test, y_pred, regType)
     coefficients = getEvaluationInfo(model, features, target, foldNumber)
     return coefficients
 
 def getMetrics(y_test, y_pred):
-    print('Mean Absolute Error:', metrics.mean_absolute_error(y_test, y_pred))
-    print('Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred))
-    print('Root Mean Squared Error:', metrics.mean_squared_error(y_test, y_pred, squared=False))
+    # affiche la métrique du modèle
+    print('MAE:', metrics.mean_absolute_error(y_test, y_pred))
+    print('MSE:', metrics.mean_squared_error(y_test, y_pred))
+    print('RMSE:', metrics.mean_squared_error(y_test, y_pred, squared=False))
     print('R²:', metrics.r2_score(y_test, y_pred))
     
 def plotEvaluationGraphs(model, X_test, y_test, y_pred, regType):
+    # affiche les graphes
     fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(15, 5))
     axes[0] = ev.plot_learning_curve(axes[0], model, X_test, y_test)
     axes[1] = ev.error_plot(axes[1], y_test, y_pred, model)
     axes[2] = ev.residual_plot(axes[2], y_test, y_pred)
     
-    fig.suptitle('Plots for the model ' + regType, fontsize=16)
+    fig.suptitle('Graphe pour le modèle : ' + regType, fontsize=16)
     plt.tight_layout()
     plt.show()
 
@@ -42,13 +44,13 @@ def getEvaluationInfo(model, features, target, foldNumber = 10):
     print("Matrice de validation croisée")
     ev.cross_validation_matrix(model, features.values, target.values, foldNumber)
     
-    # Print the coefficients
+    # print les coefficients
     coefficients = pd.DataFrame(
         {'Variable': features.columns, 'Coefficient': model.coef_})
     print(coefficients)
 
-    # Print the intercept
-    print('Intercept:', model.intercept_)
+    # Print l'interception
+    print('Constante de régression:', model.intercept_)
     return coefficients
 
 def checkColumnsLinearity(X, y):
@@ -72,37 +74,37 @@ def checkColumnsLinearity(X, y):
         r_squared = metrics.r2_score(y, y_pred)
         
         # Print R-squared for the current feature
-        print(f'R-squared for {feature}: {r_squared}')
+        print(f'R² pour {feature}: {r_squared}')
         
         # Optionally, you can plot the regression line and data points
         axes[i].scatter(current_feature, y, color='blue', label='Data')
         axes[i].plot(current_feature, y_pred, color='red', label='Regression Line')
         axes[i].set_xlabel(feature)
-        axes[i].set_ylabel('Quality')
-        axes[i].set_title(f'Regression for {feature}')
+        axes[i].set_ylabel('Qualité')
+        axes[i].set_title(f'Regression pour {feature}')
         axes[i].legend()
     
-    fig.suptitle('Colinearity between PCA columns and quality', fontsize=16)
+    fig.suptitle('Colinéarité entre PCA, colonnes et qualité', fontsize=16)
     plt.show()
 
 def executePipelines(X, y):
     # Prepare the pipeline elements
     pipelineData = []
     for name in X.columns:
-        pipelineData.append(('Simple Linear Regression for ' + name 
-                             + " feature", LinearRegression(), name))
-    pipelineData.append(('Multiple Linear Regression', 
-                         multipleLinReg(), "all"))
-    pipelineData.append(('Lasso Regression', Lasso(alpha=1.0), "all"))
-    pipelineData.append(('Ridge Regression', 
+        pipelineData.append(('Regression linéaire simple pour ' + name 
+                             + " caractéristique :", LinearRegression(), name))
+    pipelineData.append(('Regression linéaire multiple', 
+                         LinearRegression(), "all"))
+    pipelineData.append(('Regression lasso', Lasso(alpha=1.0), "all"))
+    pipelineData.append(('Regression Ridge', 
                          RidgeCV(alphas=[0.1, 1.0, 10.0]), "all"))
-    pipelineData.append(('Elastic Net Regression', ElasticNet(), "all"))
+    pipelineData.append(('Regression Elastic Net', ElasticNet(), "all"))
     
     # Create a pipeline for each regression we want to do, then execute it
     for model_name, model, col in pipelineData:
         match col:
             case "all":
-                if (model_name == 'Multiple Linear Regression'):
+                if (model_name == 'Regression Lineaire Multiple'):
                     pipeline = Pipeline([
                         ('pca', PCA(n_components = 0.7, svd_solver = 'full')),
                         ('regressor', model)  # Linear regression model
@@ -177,7 +179,7 @@ def splitTrainTest(data, column, test_size=0.2, random_state=None):
 
 class multipleLinReg:
     def __init__(self):
-        # initialise les coefficients intercept
+        # initialise les coefficients
         self.coef_ = None
         self.intercept_ = None
 
@@ -189,7 +191,7 @@ class multipleLinReg:
         if isinstance(column, pd.Series):
             column = column.values
 
-        # ajoute une colonne de 1 aux données pour contenir le terme intercept
+        # ajoute une colonne de 1 aux données pour contenir la constante de régression
         X_with_intercept = np.c_[np.ones(data.shape[0]), data]
 
         # calcule les
@@ -206,10 +208,10 @@ class multipleLinReg:
         if isinstance(data, pd.DataFrame):
             data = data.values
 
-        # Add a column of ones to data for the intercept term
+        # ajoute une colonne contenant des '1' au dataset pour contenir ensuite les constantes de régression
         data_with_intercept = np.c_[np.ones(data.shape[0]), data]
 
-        # Compute predictions
+        # affiche les prédictions
         predictions = data_with_intercept @ np.concatenate(
             [[self.intercept_], self.coef_])
 

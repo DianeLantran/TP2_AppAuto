@@ -34,9 +34,9 @@ def plot_learning_curve(axis, model, X, y):
     # Divise les données en ensembles d'entraînement et de validation
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
     
-    # Essayez différentes tailles de l'ensemble d'entraînement
+    # Essaye différentes tailles de l'ensemble d'entraînement
     for m in range(1, len(X_train) + 1):
-        model.fit(X_train[:m], y_train[:m])  # Entraînez le modèle sur un sous-ensemble d'entraînement
+        model.fit(X_train[:m], y_train[:m])  # Entraîne le modèle sur un sous-ensemble d'entraînement
     
         y_train_pred = model.predict(X_train[:m])
         train_error = metrics.mean_squared_error(y_train[:m], y_train_pred)
@@ -48,24 +48,24 @@ def plot_learning_curve(axis, model, X, y):
     
     axis.plot(range(1, len(X_train) + 1), train_errors, label="Training error")
     axis.plot(range(1, len(X_train) + 1), validation_errors, 
-              linestyle='dashed', label="Validation error")
-    axis.set_xlabel("Training set size")
-    axis.set_ylabel("Mean squared error (MSE)")
+              linestyle='dashed', label="Erreur de validation")
+    axis.set_xlabel("Taille du data set d entrainement")
+    axis.set_ylabel("MSE")
     axis.legend()
-    axis.set_title("Learning curve")
+    axis.set_title("Courbe apprentissage")
     axis.grid(True)
     return axis
     
 
 def error_plot(axis, y_true, y_pred, model):
-    axis.scatter(y_true, y_pred, c='b', label='Predicted values')
+    axis.scatter(y_true, y_pred, c='b', label='Valeurs prédites')
 
     # Plot y = x    
     axis.plot([min(y_true), max(y_true)], [min(y_true), max(y_true)], '-', label='y = x')
     
-    axis.set_xlabel("Expected values")
-    axis.set_ylabel("Predicted values")
-    axis.set_title("Expected vs Predicted values comparison")
+    axis.set_xlabel("Valeurs attendues")
+    axis.set_ylabel("Valeurs prédites")
+    axis.set_title("Comparaison valeurs attendues vs prédites")
     axis.legend()
     axis.grid(True)
     return axis
@@ -74,10 +74,10 @@ def error_plot(axis, y_true, y_pred, model):
 def residual_plot(axis, y_true, y_predicted): 
     axis.plot(y_predicted, y_true -y_predicted, "*") 
     axis.plot(y_predicted, np.zeros_like(y_predicted), "-") 
-    axis.legend(["Data", "Perfection"]) 
-    axis.set_title("Residual Plot") 
-    axis.set_xlabel("Predicted Value") 
-    axis.set_ylabel("Residual") 
+    axis.legend(["Données", "Perfection"]) 
+    axis.set_title("Plot résiduel") 
+    axis.set_xlabel("Valeurs prédites") 
+    axis.set_ylabel("Résiduelles") 
     return axis
     
 
@@ -103,6 +103,6 @@ def cross_validation_matrix(model, X, y, k):
         score = r2(y_pred, y_test)
         cross_val_scores.append(score)
     df = pd.DataFrame({"Plis": range(1, len(cross_val_scores) + 1), "Score de Validation": cross_val_scores})
-    # Affichez le DataFrame
+    # Affiche le DataFrame
     print(df)
     return cross_val_scores

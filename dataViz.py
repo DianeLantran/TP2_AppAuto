@@ -25,7 +25,7 @@ def compare2Colonnes1set(col1, col2, df):
     sns.scatterplot(data=df, x=col1, y=col2)
     plt.xlabel(col1)
     plt.ylabel(col2)
-    title = 'Comparison of ' + col1 + ' to ' + col2
+    title = 'Comparaison de ' + col1 + ' avec ' + col2
     plt.title(title)
     plt.show()
 
@@ -35,14 +35,14 @@ def compare2Colonnes2sets(col1, col2, df1, df2):
     sns.scatterplot(data=df2, x=col1, y=col2, color='blue')
     plt.xlabel(col1)
     plt.ylabel(col2)
-    title = 'Comparison of ' + col1 + ' to ' + col2
+    title = 'Comparaison de ' + col1 + ' avec ' + col2
     plt.title(title)
     plt.show()
 
 
 def plotMoyParQualite():
     fig, axes = plt.subplots(2, 5, figsize=(15, 5))
-    plt.title('Comparsion of means sorted by quality')
+    plt.title('Comparaison des moyennes, classée par valeur de qualité')
     moyennes_par_qualite_R = df1.groupby('quality').mean()
     moyennes_par_qualite_W = df2.groupby('quality').mean()
     for i in range(0, len(colNames)-1):
@@ -99,9 +99,9 @@ def plotQualiteVSColDecrois():
     df1['Sum'] = df1['volatile acidity'] + \
         df1['chlorides']+df1['density'] + df1['pH']
     sns.boxplot(x='quality', y='Sum', data=df1, color='red', width=0.4)
-    plt.xlabel('quality')
-    plt.ylabel('Sum of volatile acidity, chlorides, density and pH')
-    title = 'Comparison of quality to a sum of carefully chosen columns'
+    plt.xlabel('Qualité')
+    plt.ylabel('Somme de l acidité volatile, les chlorides, la densité et le pH')
+    title = 'Comparaison entre qualité et la somme des colonnes d intérêt'
     plt.title(title)
     plt.show()
 
@@ -116,8 +116,8 @@ def plotQualiteVSColCrois():
         df1['fixed acidity'] + df1['alcohol']
     sns.boxplot(x='quality', y='Sum1', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
-    plt.ylabel('Sum of citric acid, fixed acidity, alcohol and sulphates')
-    title = 'Comparison of quality to a sum of carefully chosen columns'
+    plt.ylabel('Somme de l acide citrique, l acidite fixe, le taux d alcool et les sulphates')
+    title = 'Comparaison de la qualité à la somme des colonnes d intérêt'
     plt.title(title)
     plt.show()
 
@@ -133,8 +133,8 @@ def plotBoitesMoustQuali():
         red_patch = plt.Line2D([0], [0], color='blue', label='DATASET_W')
         plt.legend(handles=[blue_patch, red_patch])
 
-        plt.title(f'Box Plot for {colNames[i]}')
-        plt.xlabel('Quality')
+        plt.title(f'Diagramme boite pour {colNames[i]}')
+        plt.xlabel('Qualité')
         plt.ylabel(colNames[i])
         plt.show()
 
@@ -153,7 +153,7 @@ def plotQualiteVSColTot():
     sns.boxplot(x='quality', y='Tot', data=df1, color='red', width=0.4)
     plt.xlabel('quality')
     plt.ylabel('Sum')
-    title = 'Comparison of quality to citric acid + sulphates + fixed acidity + alcohol \n- volatile acidity - chlorides - density - pH'
+    title = 'Comparaison de la qualité d acide citrique, des sulphates, de l acidité fixe, du taux d alcool \n- de l acidité volatile, des chlorides, de la densité et du pH'
     plt.title(title)
     plt.show()
 

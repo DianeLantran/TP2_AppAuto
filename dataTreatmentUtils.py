@@ -26,26 +26,6 @@ def removeUselessColumns(dataset, max_percentage):
             dataset = dataset.drop(missing_data_tab.iloc[i, 0], axis=1)
     return dataset
 
-
-# evalue la realtion de linearité entre chaque colomne et la colonne "qualité"
-def checkLinearold(dataset, column):
-    cols = dataset.drop(columns=[column])
-    for feature in cols:
-        # ajoute un terme lineaire constant pour creer un modele de regression lineaire
-        X = sm.add_constant(dataset[feature])
-        # ajuste le modele lineaire
-        model = sm.OLS(dataset[column], X)
-        results = model.fit()
-        r_squared = results.rsquared
-
-        thresh = 0.005 #seuil en dessous duquel la colonne n'est pas utilisée par le modèle
-        if r_squared < thresh:
-            dataset.drop(columns=[feature], inplace=True)
-            print(feature, " is deleted")
-    # Save the modified DataFrame back to a CSV file
-    dataset.to_csv('dataRW_regclean.csv', index=False) 
-    
-    
 # evalue la realtion de linearité entre chaque colomne et la colonne "qualité"
 def removeNotColinearCol(features_df, y, thresh = 0.005):
     for feature in features_df:
