@@ -7,15 +7,7 @@ Created on Sun Oct 15 23:42:39 2023
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
 from sklearn import metrics
-
-def mae(y_true, y_pred):
-    return ((y_pred - y_true) ** 2).mean()
-
-
-def rmse(y_true, y_pred):
-    return np.sqrt(mae(y_true, y_pred))
 
 
 def r2(y_true, y_pred):
@@ -30,7 +22,7 @@ def plot_learning_curve(axis, model, X, y):
     validation_errors = []
     
     # Divise les données en ensembles d'entraînement et de validation
-    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_val, y_train, y_val = splitTrainTest(X, y, test_size=0.2, random_state=42)
     
     # Essaye différentes tailles de l'ensemble d'entraînement
     for m in range(1, len(X_train) + 1):
@@ -104,3 +96,31 @@ def cross_validation_matrix(model, X, y, k):
     # Affiche le DataFrame
     print(df)
     return cross_val_scores
+
+
+def splitTrainTest(data, column, test_size=0.2, random_state=None):
+    # test_size = Proportion du dataset a inclure dans le test split
+    # random_state: Seed pour le nombre random pour assurer la reproductibilité. Peut prendre n'importe quelle valeur entiere
+    if isinstance(data, pd.DataFrame):
+        data = data.values
+    if isinstance(column, pd.Series):
+        column = column.values
+
+    if random_state is not None:
+        np.random.seed(random_state)
+
+    # mélange les indices
+    indices = np.arange(len(data))
+    np.random.shuffle(indices)
+
+    # calcule le nombre d'echantillons pour la base de test
+    test_samples = int(len(data) * test_size)
+
+    # sépare les données
+    test_indices = indices[:test_samples]
+    train_indices = indices[test_samples:]
+
+    X_train, X_test = data[train_indices], data[test_indices]
+    y_train, y_test = column[train_indices], column[test_indices]
+
+    return X_train, X_test, y_train, y_test
