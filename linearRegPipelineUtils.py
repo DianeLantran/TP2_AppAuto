@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline
 import dataViz as dv
 import matplotlib.pyplot as plt
 import evaluationUtils as ev
+import dataTreatmentUtils
 
 def displayResults(model, X_test, y_test, y_pred, regType, features, target, foldNumber = 10):
     # affiche les réultats : type de regression, métriques,  graphes et coefficients de régression
@@ -88,7 +89,7 @@ def checkColumnsLinearity(X, y):
     plt.show()
 
 def executePipelines(X, y):
-    # Prepare the pipeline elements
+    # Prepare la pipeline d'elements
     pipelineData = []
     for name in X.columns:
         pipelineData.append(('Regression linéaire simple pour ' + name 
@@ -100,7 +101,7 @@ def executePipelines(X, y):
                          RidgeCV(alphas=[0.1, 1.0, 10.0]), "all"))
     pipelineData.append(('Regression Elastic Net', ElasticNet(), "all"))
     
-    # Create a pipeline for each regression we want to do, then execute it
+    # crée une pipeline pour chaque regression qu'on souhaite appliquer puis l execute
     for model_name, model, col in pipelineData:
         match col:
             case "all":
@@ -110,12 +111,12 @@ def executePipelines(X, y):
                         ('regressor', model)  # Linear regression model
                     ])
                     checkColumnsLinearity(X, y)
-                    # To do if time : remove the columns that aren't colinear with target after PCA
-                    #dataTreatmentUtils.removeNotColinearCol(X, y)
+                    # Retire les colonnes qui ne sont pas colinéaires avec la cible après le PCA
+                    dataTreatmentUtils.removeNotColinearCol(X, y)
                     
                 else:
                     pipeline = Pipeline([
-                        ('regressor', model)  # Linear regression model
+                        ('regressor', model)  #Modele de regression linéaire
                     ])
                     
                 executeSinglePipeline(model_name, pipeline, X, y)
@@ -123,26 +124,26 @@ def executePipelines(X, y):
             case _:
                 selected_X = X[[col]]
                 pipeline = Pipeline([
-                    ('regressor', model)  # Linear regression model
+                    ('regressor', model)  #Modele de regression linéaire
                 ])
                 executeSinglePipeline(model_name, pipeline, selected_X, y)
 
 def executeSinglePipeline(model_name, pipeline, X, y):
-    # Split data into training et testing set
+    # sépare le dataset en training et testing set
     X_train, X_test, y_train, y_test = splitTrainTest(X, y, test_size=0.2, 
                                                       random_state=42)
     
-    # Retrieve model
+    # retrouve model
     model = pipeline['regressor']
     
-    # Fit the model to the training data
+    # applique le modele au training dataset
     pipeline.fit(X_train, y_train)
 
-    # Make predictions on the testing set
+    # fait des predictions sur le testing set
     y_pred = pipeline.predict(X_test)
     
     
-    # Get metrics, graphs and other info for the results
+    # récupère les metriques, graph et autres infos sur les résultats
     coefficients = displayResults(model, X_test, y_test, y_pred, 
                                   model_name, X, y)
     
@@ -150,8 +151,8 @@ def executeSinglePipeline(model_name, pipeline, X, y):
 
 
 def splitTrainTest(data, column, test_size=0.2, random_state=None):
-    # test_size = Proportion of the dataset to include in the test split
-    # random_state: Seed for random number generation to ensure reproducibility. Peut prendre n'importe quelle valeur entiere
+    # test_size = Proportion du dataset a inclure dans le test split
+    # random_state: Seed pour le nombre random pour assurer la reproductibilité. Peut prendre n'importe quelle valeur entiere
     if isinstance(data, pd.DataFrame):
         data = data.values
     if isinstance(column, pd.Series):
@@ -194,7 +195,7 @@ class multipleLinReg:
         # ajoute une colonne de 1 aux données pour contenir la constante de régression
         X_with_intercept = np.c_[np.ones(data.shape[0]), data]
 
-        # calcule les
+        # calcule les coef
         coefficients = np.linalg.inv(
             X_with_intercept.T @ X_with_intercept) @ X_with_intercept.T @ column
 
