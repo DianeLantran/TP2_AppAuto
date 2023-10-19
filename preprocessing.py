@@ -5,18 +5,9 @@ Created on Thu Sep 21 14:26:08 2023
 @author: basil
 """
 import pandas as pd
-from sklearn.preprocessing import OrdinalEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
-
-def colToOrdinal(df, colnames):
-    # Prepare l'encoder object
-    encoder = OrdinalEncoder(encoded_missing_value=-1)
-
-    # Fit et transforme la colonne selectionnée
-    df[colnames] = encoder.fit_transform(df[colnames])
-    return df
-
-
+# Normalise les colonnes du dataframe
 def standardize(df):
     scaler = StandardScaler()
     df_standardized = scaler.fit_transform(df)

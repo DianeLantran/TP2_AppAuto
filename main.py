@@ -1,5 +1,5 @@
 import dataTreatmentUtils
-import linearRegPipelineUtils
+import linearRegPipeline as pipeline
 import pandas as pd
 import preprocessing as prep
 
@@ -20,8 +20,10 @@ target = "quality"
 df_r = dataTreatmentUtils.removeUselessColumns(DATASET_R, 30)
 
 # Prétraitement
-# On a uniquement des colonnes avec des données quantifiables, sans données manquantes
-# Séparaison de la base : X les caractéristiques et y la cible (colonne qualité)
+# On a uniquement des colonnes avec des données quantifiables, 
+# sans données manquantes
+
+# Séparation de la base : X les caractéristiques et y la cible (colonne qualité)
 X = df_r.drop(columns=[target])
 y = df_r[target]
 
@@ -33,4 +35,4 @@ X = dataTreatmentUtils.removeNotColinearCol(X, y)
 X = prep.standardize(X)
 
 # Lance la pipeline de régression linéaire
-linearRegPipelineUtils.executePipelines(X, y)
+pipeline.executePipelines(X, y)

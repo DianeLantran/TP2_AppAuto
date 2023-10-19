@@ -3,21 +3,17 @@ Created on 17 Oct 2023
 
 @author: diane
 """
+
 import pandas as pd
-from sklearn.linear_model import RidgeCV, LinearRegression, Lasso, ElasticNet
 from sklearn import metrics
-import numpy as np
 from sklearn.decomposition import PCA
-from sklearn.pipeline import Pipeline
-import dataViz as dv
 import matplotlib.pyplot as plt
 import evaluationUtils as ev
-import dataTreatmentUtils
-import metrics_comparison as metricsCmp
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.linear_model import LinearRegression
 
 def displayResults(model, X_test, y_test, y_pred, regType, features, target, foldNumber = 10):
-    # affiche les réultats : type de regression, métriques,  graphes et coefficients de régression
+    # affiche les réultats : type de regression, métriques,  graphes et 
+    # coefficients de régression
     print("\n\nRésultat du type de regression : ", regType)
     metrics = getMetrics(y_test, y_pred)
     plotEvaluationGraphs(model, X_test, y_test, y_pred, regType)
@@ -25,7 +21,7 @@ def displayResults(model, X_test, y_test, y_pred, regType, features, target, fol
     return metrics, coefficients
 
 def getMetrics(y_test, y_pred):
-    # affiche la métrique du 
+    # affiche et retourne  les métriques MAE, MSE, RMSE, et R²
     MAE = metrics.mean_absolute_error(y_test, y_pred)
     MSE = metrics.mean_squared_error(y_test, y_pred)
     RMSE = metrics.mean_squared_error(y_test, y_pred, squared=False)
@@ -38,18 +34,19 @@ def getMetrics(y_test, y_pred):
     return (MAE, MSE, RMSE, R2)
     
 def plotEvaluationGraphs(model, X_test, y_test, y_pred, regType):
-    # affiche les graphes
+    # affiche les graphes (courbe apprentissage, résidus et erreurs)
     fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(15, 5))
     axes[0] = ev.plot_learning_curve(axes[0], model, X_test, y_test)
     axes[1] = ev.error_plot(axes[1], y_test, y_pred, model)
     axes[2] = ev.residual_plot(axes[2], y_test, y_pred)
     
-    fig.suptitle('Graphe pour le modèle : ' + regType, fontsize=16)
+    fig.suptitle('Graphes pour le modèle : ' + regType, fontsize=16)
     plt.tight_layout()
     plt.show()
 
     
 def getEvaluationInfo(model, features, target, foldNumber = 10):
+    # Affiche les résultats pour la validation croisée
     print("Matrice de validation croisée")
     ev.cross_validation_matrix(model, features.values, target.values, foldNumber)
     
@@ -63,6 +60,7 @@ def getEvaluationInfo(model, features, target, foldNumber = 10):
     return coefficients
 
 def checkColumnsLinearity(X, y):
+    # Affiche la colinéarité des colonnes dans X avec y
     pca = PCA(n_components = 0.7, svd_solver = 'full')
     df_pca = pca.fit_transform(X)
     df_pca = pd.DataFrame(df_pca, columns=['PC1', 'PC2', 'PC3', 'PC4'])
@@ -95,130 +93,3 @@ def checkColumnsLinearity(X, y):
     
     fig.suptitle('Colinéarité entre PCA, colonnes et qualité', fontsize=16)
     plt.show()
-
-def executePipelines(X, y):
-    # Prepare la pipeline d'elements
-    pipelineData = []
-    metrics_array = []
-    for name in X.columns:
-        pipelineData.append(('Regression linéaire simple pour la caractéristique ' + name 
-                             , LinearRegression(), name))
-    pipelineData.append(('Regression linéaire multiple', 
-                         LinearRegression(), "all"))
-    pipelineData.append(('Regression Ridge', 
-                         RidgeCV(alphas=[0.1, 1.0, 10.0]), "all"))
-    
-    # crée une pipeline pour chaque regression qu'on souhaite appliquer puis l execute
-    for model_name, model, col in pipelineData:
-        match col:
-            case "all":
-                if (model_name == 'Regression linéaire multiple'):
-                    pipeline = Pipeline([
-                        ('pca', PCA(n_components = 0.7, svd_solver = 'full')),
-                        ('uncorrelatedColRemoval', 
-                         DeleteUncorrelatedColsTransformer()),
-                        ('regressor', model)  # Linear regression model
-                    ])
-                    checkColumnsLinearity(X, y)
-                    
-                else:
-                    pipeline = Pipeline([
-                        ('regressor', model)  #Modele de regression linéaire
-                    ])
-                    
-                metrics = executeSinglePipeline(model_name, pipeline, X, y)
-        
-            case _:
-                selected_X = X[[col]]
-                pipeline = Pipeline([
-                    ('regressor', model)  #Modele de regression linéaire
-                ])
-                metrics = executeSinglePipeline(model_name, pipeline, 
-                                                selected_X, y)
-        metrics_array.append(metrics)
-    metricsCmp.compareMetrics(metrics_array, pipelineData)
-    
-
-def executeSinglePipeline(model_name, pipeline, X, y):
-    # sépare le dataset en training et testing set
-    X_train, X_test, y_train, y_test = ev.splitTrainTest(X, y, test_size=0.2, 
-                                                      random_state=42)
-    
-    # retrouve model
-    model = pipeline['regressor']
-    # applique le modele au training 
-    if 'uncorrelatedColRemoval' in pipeline.named_steps:
-        pipeline.fit(X_train, y_train, uncorrelatedColRemoval__y_test = y_test)
-    else:
-        pipeline.fit(X_train, y_train)
-
-    # fait des predictions sur le testing set
-    y_pred = pipeline.predict(X_test)
-    
-    # récupère les metriques, graph et autres infos sur les résultats
-    metrics, coefficients = displayResults(model, X_test, y_test, y_pred, 
-                                  model_name, X, y)
-    
-    dv.analyzeReg(X, y, coefficients, model.intercept_)
-    return metrics
-
-class DeleteUncorrelatedColsTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        self.is_transformed = False
-        self.cols_to_keep = None
-        
-    def fit(self, X, y, y_test):
-        self.y = y
-        self.y_test = y_test
-        return self
-
-    def transform(self, X):
-        if not self.is_transformed:
-            X_df = pd.DataFrame(data=X)
-            X_df = dataTreatmentUtils.removeNotColinearCol(X_df, self.y)
-            self.cols_to_keep = X_df.columns
-            self.is_transformed = True
-        else:
-            X_df = pd.DataFrame(data=X)
-            X_df = X_df[self.cols_to_keep]
-        return X_df.to_numpy()
-
-class multipleLinReg:
-    def __init__(self):
-        # initialise les coefficients
-        self.coef_ = None
-        self.intercept_ = None
-
-    def fit(self, data, column):
-        # définit le modele de regression lineaire
-
-        if isinstance(data, pd.DataFrame):
-            data = data.values
-        if isinstance(column, pd.Series):
-            column = column.values
-
-        # ajoute une colonne de 1 aux données pour contenir la constante de régression
-        X_with_intercept = np.c_[np.ones(data.shape[0]), data]
-
-        # calcule les coef
-        coefficients = np.linalg.inv(
-            X_with_intercept.T @ X_with_intercept) @ X_with_intercept.T @ column
-
-        # ajoute les coeff et remplace les valeurs d'intercept
-        self.intercept_ = coefficients[0]
-        self.coef_ = coefficients[1:]
-
-    def predict(self, data):
-        # effectue les prédictions utilisant un modele de regression lineaire
-
-        if isinstance(data, pd.DataFrame):
-            data = data.values
-
-        # ajoute une colonne contenant des '1' au dataset pour contenir ensuite les constantes de régression
-        data_with_intercept = np.c_[np.ones(data.shape[0]), data]
-
-        # affiche les prédictions
-        predictions = data_with_intercept @ np.concatenate(
-            [[self.intercept_], self.coef_])
-
-        return predictions
