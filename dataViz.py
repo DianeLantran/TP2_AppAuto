@@ -170,7 +170,6 @@ def analyzeReg(X, y, coefs, intercept):
     sns.scatterplot(data=df, x='quality', y='Y')
     plt.xlabel('Qualité réelle')
     plt.ylabel('Qualité prédite')
-    plt.legend()
     plt.show()
 
     plt.figure(figsize=(10, 6))

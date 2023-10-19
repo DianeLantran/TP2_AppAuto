@@ -28,6 +28,7 @@ def removeUselessColumns(dataset, max_percentage):
 
 # evalue la realtion de linearité entre chaque colomne et la colonne "qualité"
 def removeNotColinearCol(features_df, y, thresh = 0.005):
+    new_df = features_df
     for feature in features_df:
         # ajoute un terme lineaire constant pour creer un modele de regression lineaire
         X = sm.add_constant(features_df[feature])
@@ -35,9 +36,9 @@ def removeNotColinearCol(features_df, y, thresh = 0.005):
         model = sm.OLS(y, X)
         results = model.fit()
         r_squared = results.rsquared
-
         if r_squared < thresh:
-            features_df.drop(columns=[feature], inplace=True)
+            new_df.drop(columns=[feature], inplace=True)
+    return new_df
 
 #Traitement des lignes
 def getMissingDataPercentageForOneRow(row):
